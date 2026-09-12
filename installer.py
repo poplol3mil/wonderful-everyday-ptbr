@@ -1,8 +1,8 @@
 import argparse, base64, hashlib, json, struct, sys, os
 from pathlib import Path
 
-APP = "Wonderful Everyday PT-BR - Capitulo 1"
-STATE = ".wonderful-everyday-ptbr-ch1"
+APP = "Wonderful Everyday PT-BR - Capitulos 1 e 2"
+STATE = ".wonderful-everyday-ptbr"
 
 def sha(data): return hashlib.sha256(data).hexdigest()
 
@@ -44,10 +44,10 @@ def extract_member(archive, member):
         if name==member: return decode_dsc(raw[base+offset:base+offset+size])
     raise ValueError(f"Roteiro {member} nao encontrado em {archive.name}")
 
-def rebuild_archive(raw, replacements):
+def rebuild_archive(raw, replacements, additions=None):
     if raw[:12]!=b"BURIKO ARC20": raise ValueError("Arquivo ARC incompativel")
     count=struct.unpack_from("<I",raw,12)[0]; base=16+128*count
-    entries=[]; found=set()
+    entries=[]; found=set(); additions=set(additions or ())
     for i in range(count):
         record=bytearray(raw[16+128*i:16+128*(i+1)])
         name=record[:96].split(b"\0",1)[0].decode("cp932")
@@ -55,9 +55,16 @@ def rebuild_archive(raw, replacements):
         payload=raw[base+offset:base+offset+size]
         if name in replacements: payload=replacements[name]; found.add(name)
         entries.append((record,payload))
-    missing=set(replacements)-found
-    if missing: raise ValueError("Recurso grafico ausente: "+sorted(missing)[0])
-    output=bytearray(raw[:16]); offset=0
+    missing=set(replacements)-found-additions
+    if missing: raise ValueError("Recurso ausente: "+sorted(missing)[0])
+    for name in sorted(additions):
+        if name in found or any(r[:96].split(b"\0",1)[0].decode("cp932")==name for r,_ in entries):
+            raise ValueError("Recurso duplicado: "+name)
+        encoded=name.encode("cp932")
+        if len(encoded)>95: raise ValueError("Nome de recurso muito longo")
+        record=bytearray(128); record[:len(encoded)]=encoded
+        entries.append((record,replacements[name]))
+    output=bytearray(b"BURIKO ARC20"+struct.pack("<I",len(entries))); offset=0
     for record,payload in entries:
         struct.pack_into("<II",record,96,offset,len(payload)); output.extend(record); offset+=len(payload)
     for _,payload in entries: output.extend(payload)
@@ -134,13 +141,14 @@ def install(game):
         if current==graphic['output_sha256']:
             output=raw
         elif current==graphic['source_sha256']:
-            replacements={}
+            replacements={}; additions=set()
             for member in graphic['members']:
                 name=safe_name(member['name'])
                 payload=base64.b64decode(member['packed_base64'],validate=True)
                 if sha(payload)!=member['packed_sha256']: raise ValueError('Recurso grafico corrompido: '+name)
                 replacements[name]=payload
-            output=rebuild_archive(raw,replacements)
+                if member.get('add'): additions.add(name)
+            output=rebuild_archive(raw,replacements,additions)
             if sha(output)!=graphic['output_sha256']: raise ValueError('Patch grafico invalido: '+archive_name)
         else:
             raise ValueError('Edicao incompativel ou outro patch encontrado: '+archive_name)
@@ -167,7 +175,7 @@ def install(game):
             else: write_atomic(game/name,previous)
         if receipt_path.exists(): receipt_path.unlink()
         raise
-    return f'Instalacao concluida: {len(prepared)} roteiros e {len(prepared_archives)} arquivos graficos.'
+    return f'Instalacao concluida: {len(prepared)} roteiros e {len(prepared_archives)} arquivos de dados.'
 
 def verify(game):
     manifest=load_manifest(); good=0
@@ -182,7 +190,7 @@ def verify(game):
         if not target.is_file() or sha(target.read_bytes())!=item['output_sha256']:
             raise ValueError('Verificacao falhou: '+item['archive'])
         graphics+=1
-    return f'Verificados {good}/{len(manifest["files"])} roteiros e {graphics} arquivos graficos.'
+    return f'Verificados {good}/{len(manifest["files"])} roteiros e {graphics} arquivos de dados.'
 
 def uninstall(game):
     game=game.resolve(); assert_game_closed(game); state=game/STATE

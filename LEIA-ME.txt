@@ -1,48 +1,35 @@
 # Wonderful Everyday · PT-BR
 
-Tradução de fãs para português brasileiro de **Wonderful Everyday / Subarashiki Hibi**, destinada à **edição japonesa 15th Anniversary para Windows**.
+Tradução de fãs para português brasileiro de **Wonderful Everyday / Subarashiki Hibi**, para a **edição japonesa 15th Anniversary no Windows**.
 
-**Capítulo 1 — versão de testes 0.1.0-rc3.**
+**Capítulos 1 e 2 — versão de testes 0.2.0-rc1.**
 
 [Baixar o patch](https://github.com/poplol3mil/wonderful-everyday-ptbr/releases) · [Relatar um problema](https://github.com/poplol3mil/wonderful-everyday-ptbr/issues)
 
-## O que está disponível
+## Conteúdo
 
-O patch cobre os 13 roteiros extraídos do capítulo 1, com **5.335 registros não vazios em português**. Nomes próprios, comandos do jogo e a instalação original são preservados. Nenhuma cena é removida.
+O patch cobre 22 roteiros dos capítulos 1 e 2, com **11.714 registros não vazios em português**. Também traduz menus, avisos iniciais, a sequência anterior ao primeiro capítulo, 28 imagens de escolhas e os créditos do capítulo 1. A abertura exibe a marca da Lopilol Traduções antes das marcas originais. Nenhuma cena é removida.
 
-Também estão traduzidos os menus, avisos iniciais, a sequência de girassóis anterior ao capítulo, as cinco imagens de escolhas e as duas variantes dos créditos finais do capítulo 1. O logotipo permanece no original.
-
-Todo o texto do capítulo está preenchido, mas a revisão literária integral e os testes visuais de todas as rotas ainda estão em andamento. Os capítulos seguintes ainda não estão completos.
+O texto e os recursos do capítulo 2 estão completos nesta prévia. A revisão literária integral e o teste de todas as rotas continuam antes da versão 1.0.
 
 ## Compatibilidade
 
 - Windows 10/11 de 64 bits.
-- Edição japonesa **15th Anniversary** com os arquivos de dados reconhecidos pelo instalador.
-- As edições Steam/internacional, Full Voice HD e outras versões não foram validadas.
-- Não requer Python, conta ou conexão à internet para instalar.
+- Edição japonesa **15th Anniversary** com os arquivos reconhecidos pelo instalador.
+- Outras edições não foram validadas.
+- O instalador não exige Python, conta ou internet.
 
-O instalador confere os hashes dos arquivos. Se sua edição for diferente, interrompe a operação. Use uma cópia limpa, sem outro patch.
+Desinstale uma versão anterior do patch antes de instalar esta. Use uma cópia limpa, sem outro patch.
 
 ## Instalação
 
-1. Baixe o ZIP anexado à versão em **Releases**.
-2. Extraia todos os arquivos do ZIP juntos em uma pasta.
-3. Feche o jogo e abra **WonderfulEveryday-PTBR.exe**.
-4. Selecione a pasta que contém **BGI.exe** e clique em **Instalar**.
-5. Use **Verificar** e inicie o jogo normalmente.
+1. Baixe o ZIP anexado em **Releases** e extraia todos os arquivos.
+2. Feche o jogo e abra **WonderfulEveryday-PTBR.exe**.
+3. Selecione a pasta que contém **BGI.exe** e clique em **Instalar**.
+4. Use **Verificar** e inicie o jogo.
 
-O instalador cria backups locais antes de substituir os recursos. A pasta `.wonderful-everyday-ptbr-ch1` guarda o registro e os backups; mantenha-a até desinstalar.
+O instalador valida a edição, cria backups e permite restaurar os arquivos pela opção **Desinstalar**.
 
-## Remover o patch
+## Projeto
 
-Feche o jogo, abra o mesmo instalador, selecione a pasta do jogo e clique em **Desinstalar**. O programa interrompe a remoção se detectar arquivos alterados depois da instalação.
-
-## Estado dos testes
-
-Foram verificados a identidade dos fontes, comandos, ponteiros, hashes dos 13 roteiros, reconstrução dos arquivos gráficos, roundtrip exato das imagens e instalação/remoção numa cópia isolada. O prólogo gráfico foi executado no motor até a entrada do capítulo sem travamento. Esta versão continua sendo uma prévia pública para testes.
-
-## Sobre o projeto
-
-Projeto independente, sem afiliação com KeroQ. É necessário possuir o jogo. O download contém somente o patch e não inclui o jogo completo nem saves.
-
-Os avisos de bibliotecas de terceiros estão em [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt).
+Projeto independente, sem afiliação com KeroQ. É necessário possuir o jogo. O pacote contém somente diferenças de tradução e não inclui o jogo completo nem saves.

@@ -1,17 +1,18 @@
 {
-  "status": "pass",
+  "status": "PASS",
   "tests": [
     "install_verify_repeat_uninstall_restores_all_hashes",
-    "incompatible_graphics_archive_changes_nothing"
+    "incompatible_archive_changes_nothing"
   ],
-  "tested_scripts": 13,
-  "tested_graphics_archives": 3,
-  "localized_images": 110,
-  "scope": "Installer integrity tests and runtime smoke test; literary review and all-route playthrough remain in progress.",
+  "tested_scripts": 22,
+  "tested_data_archives": 4,
+  "localized_resources": 135,
+  "runtime_startup_smoke_test": "PASS",
+  "full_route_playthrough": "PENDING",
   "compiled_executable_tests": [
     "install",
     "repeat_preserves_receipt",
-    "verify_all_script_and_graphic_hashes",
+    "verify_all_script_and_archive_hashes",
     "uninstall_restores_all_hashes",
     "verify_missing_returns_nonzero"
   ]

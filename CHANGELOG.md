@@ -1,10 +1,11 @@
 # Histórico de versões
 
-## 0.1.0-rc3
+## 0.2.0-rc1
 
-- Cobertura textual preenchida para os 5.335 registros não vazios do capítulo 1.
-- Menus, avisos, prólogo de girassóis, cinco imagens de escolhas e duas variantes dos créditos finais traduzidos.
-- Correção do fechamento do jogo causado pelo arquivo gráfico anterior.
-- Instalador ampliado para validar, instalar, verificar e restaurar os arquivos gráficos com backup.
+- Capítulo 2 preenchido: 6.379 registros não vazios em nove roteiros.
+- Vinte e três imagens de escolhas do capítulo 2 traduzidas.
+- Tipografia e reticências do capítulo 2 normalizadas.
+- Abertura da Lopilol Traduções incluída.
+- Estrutura, ponteiros, arquivos ARC e imagens validados por roundtrip.
 
-A revisão literária integral e os testes de todas as rotas continuam em andamento.
+A revisão literária integral e o teste de todas as rotas continuam em andamento.
