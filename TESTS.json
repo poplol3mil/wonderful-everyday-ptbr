@@ -1,20 +1,18 @@
 {
   "status": "pass",
   "tests": [
-    "install_twice_uninstall_preserves_receipt",
-    "unrecognized_existing_patch_untouched",
-    "late_archive_failure_writes_nothing",
-    "changed_last_file_blocks_all_uninstall_mutations",
-    "preexisting_identical_patch_restored",
-    "write_failure_rolls_back"
+    "install_verify_repeat_uninstall_restores_all_hashes",
+    "incompatible_graphics_archive_changes_nothing"
   ],
   "tested_scripts": 13,
-  "scope": "Installer tests; not a literary or full gameplay review.",
+  "tested_graphics_archives": 3,
+  "localized_images": 110,
+  "scope": "Installer integrity tests and runtime smoke test; literary review and all-route playthrough remain in progress.",
   "compiled_executable_tests": [
     "install",
     "repeat_preserves_receipt",
-    "verify_all_hashes",
-    "uninstall",
+    "verify_all_script_and_graphic_hashes",
+    "uninstall_restores_all_hashes",
     "verify_missing_returns_nonzero"
   ]
 }

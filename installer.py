@@ -44,6 +44,25 @@ def extract_member(archive, member):
         if name==member: return decode_dsc(raw[base+offset:base+offset+size])
     raise ValueError(f"Roteiro {member} nao encontrado em {archive.name}")
 
+def rebuild_archive(raw, replacements):
+    if raw[:12]!=b"BURIKO ARC20": raise ValueError("Arquivo ARC incompativel")
+    count=struct.unpack_from("<I",raw,12)[0]; base=16+128*count
+    entries=[]; found=set()
+    for i in range(count):
+        record=bytearray(raw[16+128*i:16+128*(i+1)])
+        name=record[:96].split(b"\0",1)[0].decode("cp932")
+        offset,size=struct.unpack_from("<II",record,96)
+        payload=raw[base+offset:base+offset+size]
+        if name in replacements: payload=replacements[name]; found.add(name)
+        entries.append((record,payload))
+    missing=set(replacements)-found
+    if missing: raise ValueError("Recurso grafico ausente: "+sorted(missing)[0])
+    output=bytearray(raw[:16]); offset=0
+    for record,payload in entries:
+        struct.pack_into("<II",record,96,offset,len(payload)); output.extend(record); offset+=len(payload)
+    for _,payload in entries: output.extend(payload)
+    return bytes(output)
+
 def load_manifest():
     base=Path(sys.executable).parent if getattr(sys,"frozen",False) else Path(__file__).parent
     return json.loads((base/"patch-manifest.json").read_text(encoding="utf-8"))
@@ -85,7 +104,7 @@ def install(game):
             raise ValueError('Desinstale a versao anterior antes de atualizar.')
         verify(game)
         return 'Esta versao ja esta instalada e foi verificada. Backup preservado.'
-    prepared=[]; seen=set(); archives={}
+    prepared=[]; prepared_archives=[]; seen=set(); archives={}
     for item in manifest['files']:
         name=safe_name(item['member']); archive_name=safe_name(item['archive'])
         if name in seen: raise ValueError('Roteiro duplicado no manifesto.')
@@ -108,16 +127,39 @@ def install(game):
         if previous is not None and sha(previous)!=item['output_sha256']:
             raise ValueError('Outro patch ou roteiro solto encontrado: '+name+'. Use uma copia limpa do jogo.')
         prepared.append((name,bytes(output),previous))
+    for graphic in manifest.get('graphics',[]):
+        archive_name=safe_name(graphic['archive']); archive=game/archive_name
+        if archive.is_symlink() or not archive.is_file(): raise ValueError('Arquivo ausente: '+archive_name)
+        raw=archive.read_bytes(); current=sha(raw)
+        if current==graphic['output_sha256']:
+            output=raw
+        elif current==graphic['source_sha256']:
+            replacements={}
+            for member in graphic['members']:
+                name=safe_name(member['name'])
+                payload=base64.b64decode(member['packed_base64'],validate=True)
+                if sha(payload)!=member['packed_sha256']: raise ValueError('Recurso grafico corrompido: '+name)
+                replacements[name]=payload
+            output=rebuild_archive(raw,replacements)
+            if sha(output)!=graphic['output_sha256']: raise ValueError('Patch grafico invalido: '+archive_name)
+        else:
+            raise ValueError('Edicao incompativel ou outro patch encontrado: '+archive_name)
+        prepared_archives.append((archive_name,output,raw))
     # Validate every archive and output before any installation mutation.
     backup.mkdir(parents=True,exist_ok=True)
-    receipt={'version':manifest['version'],'files':[]}; applied=[]
+    receipt={'version':manifest['version'],'files':[],'archives':[]}; applied=[]
     try:
         for name,output,previous in prepared:
             if previous is not None: write_atomic(backup/name,previous)
             receipt['files'].append({'name':name,'prior_exists':previous is not None,'prior_sha256':sha(previous) if previous is not None else None,'installed_sha256':sha(output)})
+        for name,output,previous in prepared_archives:
+            write_atomic(backup/name,previous)
+            receipt['archives'].append({'name':name,'prior_sha256':sha(previous),'installed_sha256':sha(output)})
         # Keep recovery information before the first target is changed.
         write_atomic(receipt_path,json.dumps(receipt,indent=2).encode('utf-8'))
         for name,output,previous in prepared:
+            write_atomic(game/name,output); applied.append((name,previous))
+        for name,output,previous in prepared_archives:
             write_atomic(game/name,output); applied.append((name,previous))
     except Exception:
         for name,previous in reversed(applied):
@@ -125,7 +167,7 @@ def install(game):
             else: write_atomic(game/name,previous)
         if receipt_path.exists(): receipt_path.unlink()
         raise
-    return f'Instalacao concluida: {len(prepared)} roteiros.'
+    return f'Instalacao concluida: {len(prepared)} roteiros e {len(prepared_archives)} arquivos graficos.'
 
 def verify(game):
     manifest=load_manifest(); good=0
@@ -134,7 +176,13 @@ def verify(game):
         if not target.is_file() or sha(target.read_bytes())!=item['output_sha256']:
             raise ValueError('Verificacao falhou: '+item['member'])
         good+=1
-    return f'Verificados {good}/{len(manifest["files"])} roteiros.'
+    graphics=0
+    for item in manifest.get('graphics',[]):
+        target=game/safe_name(item['archive'])
+        if not target.is_file() or sha(target.read_bytes())!=item['output_sha256']:
+            raise ValueError('Verificacao falhou: '+item['archive'])
+        graphics+=1
+    return f'Verificados {good}/{len(manifest["files"])} roteiros e {graphics} arquivos graficos.'
 
 def uninstall(game):
     game=game.resolve(); assert_game_closed(game); state=game/STATE
@@ -148,6 +196,13 @@ def uninstall(game):
         if prior is not None and sha(prior)!=item.get('prior_sha256'):
             raise ValueError('Backup corrompido: '+name)
         prepared.append((target,prior,target.read_bytes()))
+    for item in receipt.get('archives',[]):
+        name=safe_name(item['name']); target=game/name; saved=state/'backup'/name
+        if target.is_symlink() or not target.is_file() or sha(target.read_bytes())!=item['installed_sha256']:
+            raise ValueError('Arquivo alterado; nenhuma remocao realizada: '+name)
+        if not saved.is_file() or sha(saved.read_bytes())!=item['prior_sha256']:
+            raise ValueError('Backup corrompido: '+name)
+        prepared.append((target,saved.read_bytes(),target.read_bytes()))
     applied=[]
     try:
         for target,prior,current in prepared:
@@ -158,7 +213,7 @@ def uninstall(game):
         for target,current in reversed(applied): write_atomic(target,current)
         raise
     receipt_path.unlink()
-    return f'Patch removido: {len(prepared)} roteiros restaurados.'
+    return f'Patch removido: {len(prepared)} arquivos restaurados.'
 
 def gui():
     import tkinter as tk
