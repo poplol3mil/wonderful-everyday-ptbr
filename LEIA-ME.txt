@@ -2,7 +2,7 @@
 
 Tradução de fãs para português brasileiro de **Wonderful Everyday / Subarashiki Hibi**, para a **edição japonesa 15th Anniversary no Windows**.
 
-**Capítulos 1 e 2 — versão de testes 0.2.0-rc1.**
+**Capítulos 1 e 2 — versão de testes 0.2.0-rc2.**
 
 [Baixar o patch](https://github.com/poplol3mil/wonderful-everyday-ptbr/releases) · [Relatar um problema](https://github.com/poplol3mil/wonderful-everyday-ptbr/issues)
 
@@ -10,7 +10,7 @@ Tradução de fãs para português brasileiro de **Wonderful Everyday / Subarash
 
 O patch cobre 22 roteiros dos capítulos 1 e 2, com **11.714 registros não vazios em português**. Também traduz menus, avisos iniciais, a sequência anterior ao primeiro capítulo, 28 imagens de escolhas e os créditos do capítulo 1. A abertura exibe a marca da Lopilol Traduções antes das marcas originais. Nenhuma cena é removida.
 
-O texto e os recursos do capítulo 2 estão completos nesta prévia. A revisão literária integral e o teste de todas as rotas continuam antes da versão 1.0.
+Os 11.714 registros passaram pela revisão contextual completa. O teste manual de todas as rotas continua antes da versão 1.0.
 
 ## Compatibilidade
 
